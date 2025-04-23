@@ -21,14 +21,84 @@ class Program
 
     }
 
+    static public void SQLSelect(SqlConnection conn)
+    {
+        string query = "SELECT * FROM person";
+
+        using var select = new SqlCommand(query, conn);
+        using var reader = select.ExecuteReader();
+
+        while (reader.Read())
+            Console.WriteLine($"{reader["person_id"]} \t{reader["first_name"]} \t{reader["last_name"]} \t{reader["phone"]} \t{reader["email"]} \t{reader["street"]} \t{reader["city"]} \t{reader["zip_code"]} \t{reader["country"]}");
+
+        //add some space
+        Console.WriteLine();
+    }
+
+    static public void SQLInsert(SqlConnection conn)
+    {
+        //Instantiate Person object here since this is the only place it's used
+        Person person = new Person();
+
+        string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, zip_code, country) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @zip, @country)";
+        string userInsert = null; ;
+        string temp;
+        {
+            using var insert = new SqlCommand(insertQuery, conn);
+
+            while (userInsert.IsNullOrEmpty())
+            {
+
+                Console.WriteLine("First name: ");
+                userInsert = Console.ReadLine();
+                person.FirstName = userInsert;
+                Console.WriteLine("Last name: ");
+                userInsert = Console.ReadLine();
+                person.LastName = userInsert;
+                Console.WriteLine("Phone: ");
+                userInsert = Console.ReadLine();
+                person.Phone = userInsert;
+                Console.WriteLine("Email: ");
+                userInsert = Console.ReadLine();
+                person.Email = userInsert;
+                Console.WriteLine("Street name: ");
+                userInsert = Console.ReadLine();
+                person.Street = userInsert;
+                Console.WriteLine("City: ");
+                userInsert = Console.ReadLine();
+                person.City = userInsert;
+                Console.WriteLine("Zip code (max 5 digits): ");
+
+                temp = Console.ReadLine();
+
+                //Max 5 char in TestDB
+                if (temp.Length > 5)
+                    userInsert = temp.Remove(5);
+
+                person.ZipCode = userInsert;
+                Console.WriteLine("Country: ");
+                userInsert = Console.ReadLine();
+                person.Country = userInsert;
+            }
+            //Add to SQL insert
+            insert.Parameters.AddWithValue("@f_name", person.FirstName);
+            insert.Parameters.AddWithValue("@l_name", person.LastName);
+            insert.Parameters.AddWithValue("@phone", person.Phone);
+            insert.Parameters.AddWithValue("@email", person.Email);
+            insert.Parameters.AddWithValue("@street", person.Street);
+            insert.Parameters.AddWithValue("@city", person.City);
+            insert.Parameters.AddWithValue("@zip", person.ZipCode);
+            insert.Parameters.AddWithValue("@country", person.Country);
+
+            //Run query
+            insert.ExecuteNonQuery();
+        }
+    }
+
     static void Main(string[] args)
     {
         //Instantiate Person object
-        Person person = new Person();
-
-        ////person is the table
-        string query = "SELECT * FROM person";
-        string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, zip_code, country) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @zip, @country)";
+        //Person person = new Person();
 
         //TestDB is the one we created via SQL Server Management Studio (SSMS)         
         string connectionString = "Server=localhost\\SQLEXPRESS;Database=TestDB;Trusted_Connection=True;TrustServerCertificate=true";
@@ -53,75 +123,14 @@ class Program
                 //Choose based on user choice
                 switch (input)
                 {
-                    //Select
                     case "1":
-                        {
-                            using var select = new SqlCommand(query, conn);
-                            using var reader = select.ExecuteReader();
-
-                            while (reader.Read())
-                                Console.WriteLine($"{reader["person_id"]} \t{reader["first_name"]} \t{reader["last_name"]} \t{reader["phone"]} \t{reader["email"]} \t{reader["street"]} \t{reader["city"]} \t{reader["zip_code"]} \t{reader["country"]}");
-
-                            //add some space
-                            Console.WriteLine();
-                            break;
-                        }
-                    //Insert 
+                        //Select
+                        SQLSelect(conn);
+                        break;
                     case "2":
-                        string userInsert = null; ;
-                        string temp;
-                        {
-                            using var insert = new SqlCommand(insertQuery, conn);
-
-                            while (userInsert.IsNullOrEmpty())
-                            {
-
-                                Console.WriteLine("First name: ");
-                                userInsert = Console.ReadLine();
-                                person.FirstName = userInsert;
-
-                                Console.WriteLine("Last name: ");
-                                userInsert = Console.ReadLine();
-                                person.LastName = userInsert;
-                                Console.WriteLine("Phone: ");
-                                userInsert = Console.ReadLine();
-                                person.Phone = userInsert;
-                                Console.WriteLine("Email: ");
-                                userInsert = Console.ReadLine();
-                                person.Email = userInsert;
-                                Console.WriteLine("Street name: ");
-                                userInsert = Console.ReadLine();
-                                person.Street = userInsert;
-                                Console.WriteLine("City: ");
-                                userInsert = Console.ReadLine();
-                                person.City = userInsert;
-                                Console.WriteLine("Zip code (max 5 digits): ");
-
-                                temp = Console.ReadLine();
-
-                                //Max 5 char in TestDB
-                                if (temp.Length > 5)
-                                    userInsert = temp.Remove(5);
-
-                                person.ZipCode = userInsert;
-                                Console.WriteLine("Country: ");
-                                userInsert = Console.ReadLine();
-                                person.Country = userInsert;
-                            }
-                            //Add to SQL insert
-                            insert.Parameters.AddWithValue("@f_name", person.FirstName);
-                            insert.Parameters.AddWithValue("@l_name", person.LastName);
-                            insert.Parameters.AddWithValue("@phone", person.Phone);
-                            insert.Parameters.AddWithValue("@email", person.Email);
-                            insert.Parameters.AddWithValue("@street", person.Street);
-                            insert.Parameters.AddWithValue("@city", person.City);
-                            insert.Parameters.AddWithValue("@zip", person.ZipCode);
-                            insert.Parameters.AddWithValue("@country", person.Country);
-
-                            //Run query
-                            insert.ExecuteNonQuery();
-                            break;
-                        }
+                        //Insert 
+                        SQLInsert(conn);
+                        break;
                     case "3":
                         running = false;
                         break;
@@ -129,13 +138,7 @@ class Program
                         Console.WriteLine("Please choose option 1, 2 or 3");
                         break;
                 }
-
-            } //SqlConnection block
-            // if (input == "3")
-            // {
-            //     running = false;
-            //     break;
-            // }
-        }//end While
-    }
+            }
+        }//End While
+    }//End Main
 }
