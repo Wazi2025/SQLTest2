@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace SQLTest2;
@@ -67,40 +68,46 @@ class Program
                         }
                     //Insert 
                     case "2":
-                        string userInsert;
+                        string userInsert = null; ;
                         string temp;
                         {
                             using var insert = new SqlCommand(insertQuery, conn);
 
-                            Console.WriteLine("First name: ");
-                            userInsert = Console.ReadLine();
-                            person.FirstName = userInsert;
-                            Console.WriteLine("Last name: ");
-                            userInsert = Console.ReadLine();
-                            person.LastName = userInsert;
-                            Console.WriteLine("Phone: ");
-                            userInsert = Console.ReadLine();
-                            person.Phone = userInsert;
-                            Console.WriteLine("Email: ");
-                            userInsert = Console.ReadLine();
-                            person.Email = userInsert;
-                            Console.WriteLine("Street name: ");
-                            userInsert = Console.ReadLine();
-                            person.Street = userInsert;
-                            Console.WriteLine("City: ");
-                            userInsert = Console.ReadLine();
-                            person.City = userInsert;
-                            Console.WriteLine("Zip code (max 5 digits): ");
+                            while (userInsert.IsNullOrEmpty())
+                            {
 
-                            //Max 5 char in TestDB
-                            temp = Console.ReadLine();
-                            userInsert = temp.Remove(5);
+                                Console.WriteLine("First name: ");
+                                userInsert = Console.ReadLine();
+                                person.FirstName = userInsert;
 
-                            person.ZipCode = userInsert;
-                            Console.WriteLine("Country: ");
-                            userInsert = Console.ReadLine();
-                            person.Country = userInsert;
+                                Console.WriteLine("Last name: ");
+                                userInsert = Console.ReadLine();
+                                person.LastName = userInsert;
+                                Console.WriteLine("Phone: ");
+                                userInsert = Console.ReadLine();
+                                person.Phone = userInsert;
+                                Console.WriteLine("Email: ");
+                                userInsert = Console.ReadLine();
+                                person.Email = userInsert;
+                                Console.WriteLine("Street name: ");
+                                userInsert = Console.ReadLine();
+                                person.Street = userInsert;
+                                Console.WriteLine("City: ");
+                                userInsert = Console.ReadLine();
+                                person.City = userInsert;
+                                Console.WriteLine("Zip code (max 5 digits): ");
 
+                                temp = Console.ReadLine();
+
+                                //Max 5 char in TestDB
+                                if (temp.Length > 5)
+                                    userInsert = temp.Remove(5);
+
+                                person.ZipCode = userInsert;
+                                Console.WriteLine("Country: ");
+                                userInsert = Console.ReadLine();
+                                person.Country = userInsert;
+                            }
                             //Add to SQL insert
                             insert.Parameters.AddWithValue("@f_name", person.FirstName);
                             insert.Parameters.AddWithValue("@l_name", person.LastName);
