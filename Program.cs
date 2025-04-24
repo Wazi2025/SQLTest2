@@ -30,12 +30,12 @@ class Program
 
         return userInsert;
     }
-    static private void SQLSelect(SqlConnection conn)
+    static private void SQLSelect(SqlConnection conn, SqlCommand select)
     {
-        string query = "SELECT * FROM person";
+        // string query = "SELECT * FROM person";
 
-        //Instantiate SQL object with query and current connection (conn) from Main()
-        using var select = new SqlCommand(query, conn);
+        // //Instantiate SQL object with query and current connection (conn) from Main()
+        // using var select = new SqlCommand(query, conn);
         using var reader = select.ExecuteReader();
 
         //Read from DB using the query. Will continue until there are no more rows
@@ -46,15 +46,18 @@ class Program
         Console.WriteLine();
     }
 
-    static private void SQLInsert(SqlConnection conn, Person person)
+    static private void SQLInsert(SqlConnection conn, Person person, SqlCommand insert)
     {
         string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
         //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
         string userInsert = null;
         string consoleText = null;
 
-        //Instantiate SQL object with query and current connection (conn) from Main()
-        using var insert = new SqlCommand(insertQuery, conn);
+        // string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
+        // //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
+
+        // //Instantiate SQL object with query and current connection (conn) from Main()
+        // using var insert = new SqlCommand(insertQuery, conn);
 
         consoleText = "First name: ";
         person.FirstName = ValidateInput(consoleText, userInsert);
@@ -115,10 +118,9 @@ class Program
 
         //TestDB is the one we created via SQL Server Management Studio (SSMS)         
         string connectionString = "Server=localhost\\SQLEXPRESS;Database=TestDB;Trusted_Connection=True;TrustServerCertificate=true";
-
         bool running = true;
 
-        //Keep running loop until user chooses 3 and running==false
+        //Keep running loop until user chooses 3 (and running==false)
         while (running)
         {
             Console.WriteLine("1. SELECT");
@@ -126,33 +128,44 @@ class Program
             Console.WriteLine("3. Exit");
             string input = Console.ReadLine();
 
-
             //By using the 'using' statement we ensure the SQL objects are released when we are done with them
             //It also calls the Close() method before disposal
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                //Open the DB connection            
-                conn.Open();
+            using SqlConnection conn = new SqlConnection(connectionString);
 
-                //Choose based on user choice
-                switch (input)
-                {
-                    case "1":
-                        //Select
-                        SQLSelect(conn);
-                        break;
-                    case "2":
-                        //Insert 
-                        SQLInsert(conn, person);
-                        break;
-                    case "3":
-                        running = false;
-                        break;
-                    default:
-                        Console.WriteLine("Please choose option 1, 2 or 3");
-                        break;
-                }
+            string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
+            //Instantiate SQL object with query and current connection (conn) from Main()
+            //We could do this inside SQLSelect but that would mean creating and destroying it each time we re-enter
+            //the method from ValidateInput
+            using var insert = new SqlCommand(insertQuery, conn);
+
+            string query = "SELECT * FROM person";
+            //Instantiate SQL object with query and current connection (conn) from Main()
+            //We could do this inside SQLSelect but that would mean creating and destroying it each time we re-enter
+            //the method from ValidateInput
+            using var select = new SqlCommand(query, conn);
+
+            //Open the DB connection            
+            conn.Open();
+
+            //Choose based on user choice
+            switch (input)
+            {
+                case "1":
+                    //Select
+                    SQLSelect(conn, select);
+                    break;
+                case "2":
+                    //Insert 
+                    SQLInsert(conn, person, insert);
+                    break;
+                case "3":
+                    running = false;
+                    break;
+                default:
+                    Console.WriteLine("Please choose option 1, 2 or 3");
+                    break;
             }
+
         }//End While
     }//End Main
 }
