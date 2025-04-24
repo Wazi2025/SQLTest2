@@ -30,12 +30,8 @@ class Program
 
         return userInsert;
     }
-    static private void SQLSelect(SqlConnection conn, SqlCommand select)
+    static private void SQLSelect(SqlCommand select)
     {
-        // string query = "SELECT * FROM person";
-
-        // //Instantiate SQL object with query and current connection (conn) from Main()
-        // using var select = new SqlCommand(query, conn);
         using var reader = select.ExecuteReader();
 
         //Read from DB using the query. Will continue until there are no more rows
@@ -46,18 +42,10 @@ class Program
         Console.WriteLine();
     }
 
-    static private void SQLInsert(SqlConnection conn, Person person, SqlCommand insert)
+    static private void SQLInsert(Person person, SqlCommand insert)
     {
-        string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
-        //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
         string userInsert = null;
         string consoleText = null;
-
-        // string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
-        // //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
-
-        // //Instantiate SQL object with query and current connection (conn) from Main()
-        // using var insert = new SqlCommand(insertQuery, conn);
 
         consoleText = "First name: ";
         person.FirstName = ValidateInput(consoleText, userInsert);
@@ -152,11 +140,11 @@ class Program
             {
                 case "1":
                     //Select
-                    SQLSelect(conn, select);
+                    SQLSelect(select);
                     break;
                 case "2":
                     //Insert 
-                    SQLInsert(conn, person, insert);
+                    SQLInsert(person, insert);
                     break;
                 case "3":
                     running = false;
