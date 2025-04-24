@@ -22,7 +22,6 @@ class Program
 
     static private string ValidateInput(string consoleText, string userInsert)
     {
-        //string input = null;
         while (String.IsNullOrWhiteSpace(userInsert))
         {
             Console.WriteLine(consoleText);
@@ -55,63 +54,62 @@ class Program
         string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
         //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
         string userInsert = null;
-        string temp;
         string consoleText = null;
+        //{
+        //Instantiate SQL object with query and current connection (conn) from Main()
+        using var insert = new SqlCommand(insertQuery, conn);
+
+        consoleText = "First name: ";
+        person.FirstName = ValidateInput(consoleText, userInsert);
+
+        consoleText = "Last name: ";
+        person.LastName = ValidateInput(consoleText, userInsert);
+
+        consoleText = "Phone: ";
+        //Prolly use a number Validate method here
+        person.Phone = ValidateInput(consoleText, userInsert);
+
+        //Add some sort of email Validation
+        consoleText = "Email: ";
+        person.Email = ValidateInput(consoleText, userInsert);
+
+        consoleText = "Street: ";
+        person.Street = ValidateInput(consoleText, userInsert);
+
+        consoleText = "City: ";
+        person.City = ValidateInput(consoleText, userInsert);
+
+        //Use number + max length > 5 Validate method
+        Console.WriteLine("Zip code (max 5 digits): ");
+        userInsert = Console.ReadLine();
+
+        //Max 5 char in TestDB
+        if (userInsert.Length > 5)
         {
-            //Instantiate SQL object with query and current connection (conn) from Main()
-            using var insert = new SqlCommand(insertQuery, conn);
-
-            consoleText = "First name: ";
-            person.FirstName = ValidateInput(consoleText, userInsert);
-
-            consoleText = "Last name: ";
-            person.LastName = ValidateInput(consoleText, userInsert);
-
-            consoleText = "Phone: ";
-            //Prolly use a number Validate method here
-            person.Phone = ValidateInput(consoleText, userInsert);
-
-            //Add some sort of email Validation
-            consoleText = "Email: ";
-            person.Email = ValidateInput(consoleText, userInsert);
-
-            consoleText = "Street: ";
-            person.Street = ValidateInput(consoleText, userInsert);
-
-            consoleText = "City: ";
-            person.City = ValidateInput(consoleText, userInsert);
-
-            //Use number + max length > 5 Validate method
-            Console.WriteLine("Zip code (max 5 digits): ");
-            userInsert = Console.ReadLine();
-
-            //Max 5 char in TestDB
-            if (userInsert.Length > 5)
-            {
-                userInsert = userInsert.Remove(5);
-            }
-            person.ZipCode = userInsert;
-
-            //Setting this variable temporarily to null so person.Country's Validate check isn't skipped
-            //
-            userInsert = null;
-
-            consoleText = "Country: ";
-            person.Country = ValidateInput(consoleText, userInsert);
-
-            //Add to SQL insert
-            insert.Parameters.AddWithValue("@f_name", person.FirstName);
-            insert.Parameters.AddWithValue("@l_name", person.LastName);
-            insert.Parameters.AddWithValue("@phone", person.Phone);
-            insert.Parameters.AddWithValue("@email", person.Email);
-            insert.Parameters.AddWithValue("@street", person.Street);
-            insert.Parameters.AddWithValue("@city", person.City);
-            insert.Parameters.AddWithValue("@country", person.Country);
-            insert.Parameters.AddWithValue("@zip", person.ZipCode);
-
-            //Run INSERT query
-            insert.ExecuteNonQuery();
+            userInsert = userInsert.Remove(5);
         }
+        person.ZipCode = userInsert;
+
+        //Setting this variable temporarily to null so person.Country's Validate check isn't skipped
+        //
+        userInsert = null;
+
+        consoleText = "Country: ";
+        person.Country = ValidateInput(consoleText, userInsert);
+
+        //Add to SQL insert
+        insert.Parameters.AddWithValue("@f_name", person.FirstName);
+        insert.Parameters.AddWithValue("@l_name", person.LastName);
+        insert.Parameters.AddWithValue("@phone", person.Phone);
+        insert.Parameters.AddWithValue("@email", person.Email);
+        insert.Parameters.AddWithValue("@street", person.Street);
+        insert.Parameters.AddWithValue("@city", person.City);
+        insert.Parameters.AddWithValue("@country", person.Country);
+        insert.Parameters.AddWithValue("@zip", person.ZipCode);
+
+        //Run INSERT query
+        insert.ExecuteNonQuery();
+        //}
     }
 
     static void Main(string[] args)
