@@ -46,16 +46,13 @@ class Program
         Console.WriteLine();
     }
 
-    static private void SQLInsert(SqlConnection conn)
+    static private void SQLInsert(SqlConnection conn, Person person)
     {
-        //Instantiate Person object here since this is the only place it's used
-        Person person = new Person();
-
         string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
         //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
         string userInsert = null;
         string consoleText = null;
-        //{
+
         //Instantiate SQL object with query and current connection (conn) from Main()
         using var insert = new SqlCommand(insertQuery, conn);
 
@@ -79,11 +76,10 @@ class Program
         consoleText = "City: ";
         person.City = ValidateInput(consoleText, userInsert);
 
-        //Use number + max length > 5 Validate method
+        //Move this to a "Use number + max length > 5" Validate method
         Console.WriteLine("Zip code (max 5 digits): ");
         userInsert = Console.ReadLine();
 
-        //Max 5 char in TestDB
         if (userInsert.Length > 5)
         {
             userInsert = userInsert.Remove(5);
@@ -91,7 +87,6 @@ class Program
         person.ZipCode = userInsert;
 
         //Setting this variable temporarily to null so person.Country's Validate check isn't skipped
-        //
         userInsert = null;
 
         consoleText = "Country: ";
@@ -109,16 +104,21 @@ class Program
 
         //Run INSERT query
         insert.ExecuteNonQuery();
-        //}
     }
 
     static void Main(string[] args)
     {
+        //Instantiate Person object.
+        //We could instantiate it in SQLInsert but that would mean creating a new object each time it returns from
+        //ValidateInput
+        Person person = new Person();
+
         //TestDB is the one we created via SQL Server Management Studio (SSMS)         
         string connectionString = "Server=localhost\\SQLEXPRESS;Database=TestDB;Trusted_Connection=True;TrustServerCertificate=true";
 
         bool running = true;
 
+        //Keep running loop until user chooses 3 and running==false
         while (running)
         {
             Console.WriteLine("1. SELECT");
@@ -143,7 +143,7 @@ class Program
                         break;
                     case "2":
                         //Insert 
-                        SQLInsert(conn);
+                        SQLInsert(conn, person);
                         break;
                     case "3":
                         running = false;
