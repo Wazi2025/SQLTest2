@@ -18,16 +18,28 @@ class Program
         public string City { get; set; }
         public string Country { get; set; }
         public string ZipCode { get; set; }
-
     }
 
-    static public void SQLSelect(SqlConnection conn)
+    static private string ValidateInput(string consoleText, string userInsert)
+    {
+        //string input = null;
+        while (String.IsNullOrWhiteSpace(userInsert))
+        {
+            Console.WriteLine(consoleText);
+            userInsert = Console.ReadLine();
+        }
+
+        return userInsert;
+    }
+    static private void SQLSelect(SqlConnection conn)
     {
         string query = "SELECT * FROM person";
 
+        //Instantiate SQL object with query and current connection (conn) from Main()
         using var select = new SqlCommand(query, conn);
         using var reader = select.ExecuteReader();
 
+        //Read from DB using the query. Will continue until there are no more rows
         while (reader.Read())
             Console.WriteLine($"{reader["person_id"]} \t{reader["first_name"]} \t{reader["last_name"]} \t{reader["phone"]} \t{reader["email"]} \t{reader["street"]} \t{reader["city"]} \t{reader["zip_code"]} \t{reader["country"]}");
 
@@ -35,51 +47,58 @@ class Program
         Console.WriteLine();
     }
 
-    static public void SQLInsert(SqlConnection conn)
+    static private void SQLInsert(SqlConnection conn)
     {
         //Instantiate Person object here since this is the only place it's used
         Person person = new Person();
 
-        string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, zip_code, country) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @zip, @country)";
-        string userInsert = null; ;
+        string insertQuery = "INSERT INTO person (first_name, last_name, phone, email, street, city, country, zip_code) VALUES (@f_name, @l_name, @phone, @email, @street, @city, @country, @zip)";
+        //string insertQuery = "INSERT INTO person (first_name, last_name, email) VALUES (@f_name, @l_name, @email)";
+        string userInsert = null;
         string temp;
+        string consoleText = null;
         {
+            //Instantiate SQL object with query and current connection (conn) from Main()
             using var insert = new SqlCommand(insertQuery, conn);
 
-            while (userInsert.IsNullOrEmpty())
+            consoleText = "First name: ";
+            person.FirstName = ValidateInput(consoleText, userInsert);
+
+            consoleText = "Last name: ";
+            person.LastName = ValidateInput(consoleText, userInsert);
+
+            consoleText = "Phone: ";
+            //Prolly use a number Validate method here
+            person.Phone = ValidateInput(consoleText, userInsert);
+
+            //Add some sort of email Validation
+            consoleText = "Email: ";
+            person.Email = ValidateInput(consoleText, userInsert);
+
+            consoleText = "Street: ";
+            person.Street = ValidateInput(consoleText, userInsert);
+
+            consoleText = "City: ";
+            person.City = ValidateInput(consoleText, userInsert);
+
+            //Use number + max length > 5 Validate method
+            Console.WriteLine("Zip code (max 5 digits): ");
+            userInsert = Console.ReadLine();
+
+            //Max 5 char in TestDB
+            if (userInsert.Length > 5)
             {
-
-                Console.WriteLine("First name: ");
-                userInsert = Console.ReadLine();
-                person.FirstName = userInsert;
-                Console.WriteLine("Last name: ");
-                userInsert = Console.ReadLine();
-                person.LastName = userInsert;
-                Console.WriteLine("Phone: ");
-                userInsert = Console.ReadLine();
-                person.Phone = userInsert;
-                Console.WriteLine("Email: ");
-                userInsert = Console.ReadLine();
-                person.Email = userInsert;
-                Console.WriteLine("Street name: ");
-                userInsert = Console.ReadLine();
-                person.Street = userInsert;
-                Console.WriteLine("City: ");
-                userInsert = Console.ReadLine();
-                person.City = userInsert;
-                Console.WriteLine("Zip code (max 5 digits): ");
-
-                temp = Console.ReadLine();
-
-                //Max 5 char in TestDB
-                if (temp.Length > 5)
-                    userInsert = temp.Remove(5);
-
-                person.ZipCode = userInsert;
-                Console.WriteLine("Country: ");
-                userInsert = Console.ReadLine();
-                person.Country = userInsert;
+                userInsert = userInsert.Remove(5);
             }
+            person.ZipCode = userInsert;
+
+            //Setting this variable temporarily to null so person.Country's Validate check isn't skipped
+            //
+            userInsert = null;
+
+            consoleText = "Country: ";
+            person.Country = ValidateInput(consoleText, userInsert);
+
             //Add to SQL insert
             insert.Parameters.AddWithValue("@f_name", person.FirstName);
             insert.Parameters.AddWithValue("@l_name", person.LastName);
@@ -87,19 +106,16 @@ class Program
             insert.Parameters.AddWithValue("@email", person.Email);
             insert.Parameters.AddWithValue("@street", person.Street);
             insert.Parameters.AddWithValue("@city", person.City);
-            insert.Parameters.AddWithValue("@zip", person.ZipCode);
             insert.Parameters.AddWithValue("@country", person.Country);
+            insert.Parameters.AddWithValue("@zip", person.ZipCode);
 
-            //Run query
+            //Run INSERT query
             insert.ExecuteNonQuery();
         }
     }
 
     static void Main(string[] args)
     {
-        //Instantiate Person object
-        //Person person = new Person();
-
         //TestDB is the one we created via SQL Server Management Studio (SSMS)         
         string connectionString = "Server=localhost\\SQLEXPRESS;Database=TestDB;Trusted_Connection=True;TrustServerCertificate=true";
 
